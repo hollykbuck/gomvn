@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -65,8 +66,15 @@ type Server struct {
 
 func (s *Server) Listen() error {
 	log.Printf("GoMVN self-hosted repository listening on %s\n", s.listen)
-	go s.app.Listen(s.listen)
-	return nil
+	errCh := make(chan error)
+	go func() {
+		err := s.app.Listen(s.listen)
+		if err != nil {
+			errCh <- fmt.Errorf("failed to listen: %w", err)
+		}
+		close(errCh)
+	}()
+	return <-errCh
 }
 
 func (s *Server) Shutdown() error {
