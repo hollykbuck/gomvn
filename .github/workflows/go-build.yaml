@@ -27,6 +27,10 @@ jobs:
     - name: Lint Code
       run: go vet .
 
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v3
 

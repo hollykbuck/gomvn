@@ -7,6 +7,8 @@ import (
 type Server struct {
 	Host string
 	Port int
+	Cert *string
+	Key  *string
 }
 
 func (c *Server) GetListenAddr() string {

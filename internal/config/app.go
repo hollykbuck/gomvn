@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"os"
 
 	"gopkg.in/yaml.v2"
@@ -18,8 +19,8 @@ func NewAppConfig(file string) (*App, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := yaml.Unmarshal(yamlFile, &conf); err != nil {
-		return nil, err
+	if err = yaml.Unmarshal(yamlFile, &conf); err != nil {
+		return nil, fmt.Errorf("cannot unmarshal data: %v", err)
 	}
 	return &conf, nil
 }

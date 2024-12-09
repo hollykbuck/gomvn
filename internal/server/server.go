@@ -24,10 +24,18 @@ func New(conf *config.App, ps *service.PathService, storage *service.Storage, us
 
 	app.Use(compress.New())
 
+	var cert *Cert
+	if conf.Server.Cert != nil {
+		cert = &Cert{
+			Cert: *conf.Server.Cert,
+			Key:  *conf.Server.Key,
+		}
+	}
 	server := &Server{
 		app:     app,
 		name:    conf.Name,
 		listen:  conf.Server.GetListenAddr(),
+		cert:    cert,
 		ps:      ps,
 		storage: storage,
 		us:      us,
@@ -53,10 +61,16 @@ func New(conf *config.App, ps *service.PathService, storage *service.Storage, us
 	return server
 }
 
+type Cert struct {
+	Cert string
+	Key  string
+}
+
 type Server struct {
 	app     *fiber.App
 	name    string
 	listen  string
+	cert    *Cert
 	ps      *service.PathService
 	storage *service.Storage
 	us      *user.Service
@@ -67,13 +81,33 @@ func (s *Server) Listen() error {
 	log.Printf("GoMVN self-hosted repository listening on %s\n", s.listen)
 	errCh := make(chan error)
 	go func() {
-		err := s.app.Listen(s.listen)
+		defer close(errCh)
+		err := func() error {
+			var err error
+			if s.cert != nil {
+				err = s.app.ListenTLS(s.listen, s.cert.Cert, s.cert.Key)
+				if err != nil {
+					return fmt.Errorf("failed to listen: %w", err)
+				}
+			} else {
+				err = s.app.Listen(s.listen)
+				if err != nil {
+					return fmt.Errorf("failed to listen: %w", err)
+				}
+			}
+			return nil
+		}()
 		if err != nil {
 			errCh <- fmt.Errorf("failed to listen: %w", err)
 		}
-		close(errCh)
 	}()
-	return <-errCh
+	select {
+	case err := <-errCh:
+		if err != nil {
+			return fmt.Errorf("server error: %w", err)
+		}
+	}
+	return nil
 }
 
 func (s *Server) Shutdown() error {

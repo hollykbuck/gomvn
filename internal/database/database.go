@@ -21,9 +21,8 @@ func New() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	// db.LogMode(true)
+	//db.LogMode(true)
 	db.AutoMigrate(&entity.User{}, &entity.Path{})
-	db.Model(&entity.Path{}).AddForeignKey("user_id", "users(id)", "CASCADE", "CASCADE")
 
 	return db, nil
 }
