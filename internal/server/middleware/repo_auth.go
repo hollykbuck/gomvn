@@ -4,7 +4,7 @@ import (
 	"log"
 	"strings"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 	"golang.org/x/crypto/bcrypt"
 
 	"github.com/gomvn/gomvn/internal/server/basicauth"
@@ -12,7 +12,7 @@ import (
 	"github.com/gomvn/gomvn/internal/service/user"
 )
 
-func NewRepoAuth(us *user.Service, ps *service.PathService, needsDeploy bool) func(*fiber.Ctx) {
+func NewRepoAuth(us *user.Service, ps *service.PathService, needsDeploy bool) func(*fiber.Ctx) error {
 	return basicauth.New(basicauth.Config{
 		Authorizer: func(c *fiber.Ctx, name string, token string) bool {
 			u, err := us.GetByName(name)

@@ -5,11 +5,9 @@ import (
 	"log"
 	"time"
 
-	"github.com/gofiber/compression"
-	"github.com/gofiber/fiber"
-	"github.com/gofiber/logger"
-	"github.com/gofiber/template/html"
-
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/compress"
+	"github.com/gofiber/template/html/v2"
 	"github.com/gomvn/gomvn/internal/config"
 	"github.com/gomvn/gomvn/internal/server/middleware"
 	"github.com/gomvn/gomvn/internal/service"
@@ -17,13 +15,14 @@ import (
 )
 
 func New(conf *config.App, ps *service.PathService, storage *service.Storage, us *user.Service, rs *service.RepoService) *Server {
-	app := fiber.New()
-	app.Settings.IdleTimeout = time.Second * 5
-	app.Settings.DisableStartupMessage = true
-	app.Settings.Templates = html.New("./views", ".html")
+	engine := html.New("./views", ".html")
+	app := fiber.New(fiber.Config{
+		IdleTimeout:           time.Second * 5,
+		DisableStartupMessage: true,
+		Views:                 engine,
+	})
 
-	app.Use(compression.New())
-	app.Use(logger.New())
+	app.Use(compress.New())
 
 	server := &Server{
 		app:     app,

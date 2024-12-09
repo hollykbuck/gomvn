@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 )
 
 func NewStorage() *Storage {
@@ -49,10 +49,10 @@ func (s *Storage) WriteFromRequest(c *fiber.Ctx, path string) error {
 	defer f.Close()
 
 	w := bufio.NewWriter(f)
-	if err := c.Fasthttp.Request.BodyWriteTo(w); err != nil {
+	if err = c.Request().BodyWriteTo(w); err != nil {
 		return err
 	}
-	if err := w.Flush(); err != nil {
+	if err = w.Flush(); err != nil {
 		return err
 	}
 
